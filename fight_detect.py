@@ -7,6 +7,7 @@ import os
 # 🔇 Suppress warnings
 warnings.filterwarnings("ignore")
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+os.environ["YOLO_OFFLINE"] = "1"
 
 # Load YOLO model
 print("Loading YOLO model...")
