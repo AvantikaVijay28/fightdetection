@@ -9,7 +9,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 @app.route("/")
 def home():
-    return "🔥 Rivox Fight Detection Running"
+    return upload_page()
 
 @app.route("/upload")
 def upload_page():
