@@ -1,2 +1,3 @@
 #!/bin/bash
-python -m pip install --upgrade pip setuptools wheel
+echo "Upgrading pip, setuptools, and wheel..."
+pip install --upgrade pip setuptools wheel
