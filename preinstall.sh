@@ -1,7 +1,6 @@
 #!/bin/bash
-
-# Upgrade pip, setuptools, wheel first
+# Ensure pip, setuptools, wheel are up-to-date
 python -m pip install --upgrade pip setuptools wheel
 
-# Then install requirements
-pip install -r requirements.txt
+# Install all packages from requirements.txt into the Render virtual environment
+$VIRTUAL_ENV/bin/pip install -r requirements.txt
