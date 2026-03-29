@@ -4,3 +4,5 @@ python -m pip install --upgrade pip setuptools wheel
 
 # Install all packages from requirements.txt into the Render virtual environment
 pip install -r requirements.txt
+
+pip install gunicorn
