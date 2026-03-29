@@ -1,3 +1,7 @@
 #!/bin/bash
-echo "Upgrading pip, setuptools, and wheel..."
-pip install --upgrade pip setuptools wheel
+
+# Upgrade pip, setuptools, wheel first
+python -m pip install --upgrade pip setuptools wheel
+
+# Then install requirements
+pip install -r requirements.txt
