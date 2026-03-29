@@ -11,521 +11,419 @@ HTML = '''<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Rivox — Fight Detection</title>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
         :root {
-            --bg: #080c10;
-            --surface: #0e1419;
-            --border: rgba(255,255,255,0.07);
-            --accent: #e8ff47;
-            --accent-dim: rgba(232,255,71,0.12);
-            --red: #ff4545;
-            --red-dim: rgba(255,69,69,0.12);
-            --green: #3dffa0;
-            --green-dim: rgba(61,255,160,0.12);
-            --text: #f0f4f8;
-            --muted: #5a6a7a;
-            --card-radius: 20px;
+            --bg: #04080f;
+            --surface: #080f1a;
+            --surface2: #0c1525;
+            --border: rgba(0,200,255,0.08);
+            --border-bright: rgba(0,200,255,0.22);
+            --cyan: #00c8ff;
+            --cyan-dim: rgba(0,200,255,0.1);
+            --cyan-glow: rgba(0,200,255,0.25);
+            --red: #ff3a3a;
+            --red-dim: rgba(255,58,58,0.1);
+            --red-glow: rgba(255,58,58,0.3);
+            --green: #00ff9d;
+            --green-dim: rgba(0,255,157,0.1);
+            --green-glow: rgba(0,255,157,0.3);
+            --text: #e2eaf5;
+            --muted: #3d5470;
+            --r: 16px;
         }
-
-        html, body {
-            height: 100%;
+        html { height: 100%; }
+        body {
+            min-height: 100dvh;
             background: var(--bg);
             color: var(--text);
-            font-family: 'DM Sans', sans-serif;
+            font-family: "Space Grotesk", sans-serif;
             -webkit-font-smoothing: antialiased;
-        }
-
-        body {
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-height: 100dvh;
-            padding: 0 0 40px;
+            padding-bottom: 48px;
         }
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);
+            pointer-events: none;
+            z-index: 0;
+        }
+        * { position: relative; z-index: 1; }
 
-        /* ── Header ── */
         header {
             width: 100%;
-            padding: 20px 24px 16px;
+            max-width: 520px;
+            padding: 24px 20px 0;
             display: flex;
             align-items: center;
-            gap: 10px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .logo-dot {
-            width: 10px; height: 10px;
-            border-radius: 50%;
-            background: var(--accent);
-            box-shadow: 0 0 10px var(--accent);
-            flex-shrink: 0;
-        }
-
-        .logo-text {
-            font-family: 'Syne', sans-serif;
-            font-weight: 800;
-            font-size: 18px;
-            letter-spacing: -0.3px;
-            color: var(--text);
-        }
-
-        .logo-text span { color: var(--accent); }
-
-        .badge {
-            margin-left: auto;
-            font-size: 11px;
-            font-weight: 500;
-            color: var(--muted);
-            background: rgba(255,255,255,0.05);
-            border: 1px solid var(--border);
-            padding: 4px 10px;
-            border-radius: 20px;
-            letter-spacing: 0.5px;
-        }
-
-        /* ── Main card ── */
-        .card {
-            width: calc(100% - 32px);
-            max-width: 480px;
-            margin-top: 28px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--card-radius);
-            overflow: hidden;
-        }
-
-        .card-inner { padding: 24px; }
-
-        .section-label {
-            font-size: 11px;
-            font-weight: 500;
-            letter-spacing: 1.2px;
-            text-transform: uppercase;
-            color: var(--muted);
-            margin-bottom: 14px;
-        }
-
-        /* ── Upload zone ── */
-        .upload-zone {
-            border: 1.5px dashed rgba(232,255,71,0.3);
-            border-radius: 14px;
-            padding: 32px 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: border-color 0.2s, background 0.2s;
-            position: relative;
-            background: rgba(232,255,71,0.03);
-        }
-
-        .upload-zone:active { background: var(--accent-dim); }
-        .upload-zone.has-file { border-color: rgba(232,255,71,0.6); }
-
-        .upload-icon {
-            font-size: 32px;
-            margin-bottom: 10px;
-            display: block;
-        }
-
-        .upload-title {
-            font-family: 'Syne', sans-serif;
-            font-weight: 600;
-            font-size: 15px;
-            color: var(--text);
-            margin-bottom: 4px;
-        }
-
-        .upload-sub {
-            font-size: 12px;
-            color: var(--muted);
-        }
-
-        #fileInput { display: none; }
-
-        /* ── Video preview ── */
-        #preview {
-            display: none;
-            width: 100%;
-            border-radius: 12px;
-            margin-top: 16px;
-            max-height: 220px;
-            object-fit: cover;
-            background: #000;
-        }
-
-        /* ── Divider ── */
-        .divider {
-            height: 1px;
-            background: var(--border);
-            margin: 24px 0;
-        }
-
-        /* ── Analyze button ── */
-        .btn-analyze {
-            width: 100%;
-            padding: 16px;
-            border-radius: 14px;
-            border: none;
-            background: var(--accent);
-            color: #080c10;
-            font-family: 'Syne', sans-serif;
-            font-weight: 700;
-            font-size: 15px;
-            letter-spacing: 0.3px;
-            cursor: pointer;
-            transition: opacity 0.2s, transform 0.1s;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .btn-analyze:active { transform: scale(0.98); opacity: 0.9; }
-        .btn-analyze:disabled { opacity: 0.4; cursor: not-allowed; }
-
-        /* ── Loading ── */
-        #loading {
-            display: none;
-            text-align: center;
-            padding: 28px 0 8px;
-        }
-
-        .spinner-ring {
-            width: 40px; height: 40px;
-            border: 3px solid rgba(232,255,71,0.15);
-            border-top-color: var(--accent);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin: 0 auto 14px;
-        }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        .loading-text {
-            font-size: 13px;
-            color: var(--muted);
-            letter-spacing: 0.3px;
-        }
-
-        /* ── Result ── */
-        #result-card {
-            display: none;
-            margin-top: 20px;
-            border-radius: 14px;
-            padding: 20px;
-            border: 1px solid var(--border);
-        }
-
-        #result-card.fight {
-            background: var(--red-dim);
-            border-color: rgba(255,69,69,0.25);
-        }
-
-        #result-card.no-fight {
-            background: var(--green-dim);
-            border-color: rgba(61,255,160,0.25);
-        }
-
-        .result-emoji { font-size: 28px; margin-bottom: 8px; display: block; }
-
-        .result-label {
-            font-family: 'Syne', sans-serif;
-            font-weight: 800;
-            font-size: 22px;
-            margin-bottom: 12px;
-        }
-
-        .result-label.fight { color: var(--red); }
-        .result-label.no-fight { color: var(--green); }
-
-        .result-stats {
-            display: flex;
             gap: 12px;
         }
-
-        .stat {
-            flex: 1;
-            background: rgba(255,255,255,0.04);
-            border-radius: 10px;
-            padding: 12px;
+        .hx-mark {
+            width: 32px; height: 32px;
+            border: 1.5px solid var(--cyan);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 0 12px var(--cyan-glow), inset 0 0 8px var(--cyan-dim);
         }
-
-        .stat-label {
-            font-size: 10px;
-            letter-spacing: 0.8px;
+        .hx-mark svg { width: 16px; height: 16px; }
+        .brand {
+            font-family: "Space Mono", monospace;
+            font-weight: 700;
+            font-size: 16px;
+            letter-spacing: 2px;
+            color: var(--cyan);
             text-transform: uppercase;
+        }
+        .version {
+            margin-left: auto;
+            font-family: "Space Mono", monospace;
+            font-size: 10px;
             color: var(--muted);
-            margin-bottom: 4px;
+            letter-spacing: 1px;
+            border: 1px solid var(--border-bright);
+            padding: 4px 8px;
+            border-radius: 4px;
         }
 
-        .stat-value {
-            font-family: 'Syne', sans-serif;
-            font-weight: 700;
-            font-size: 18px;
-            color: var(--text);
-        }
-
-        /* ── Chart card ── */
-        #chart-card {
-            display: none;
+        .card {
             width: calc(100% - 32px);
-            max-width: 480px;
-            margin-top: 16px;
+            max-width: 520px;
+            margin-top: 20px;
             background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--card-radius);
-            padding: 24px;
+            border: 1px solid var(--border-bright);
+            border-radius: var(--r);
+            overflow: hidden;
         }
-
-        .chart-header {
+        .card-top {
+            border-bottom: 1px solid var(--border);
+            padding: 14px 20px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            margin-bottom: 20px;
+            gap: 8px;
+        }
+        .dot { width: 6px; height: 6px; border-radius: 50%; }
+        .dot-r { background: #ff453a; }
+        .dot-y { background: #ffd60a; }
+        .dot-g { background: #34c759; }
+        .card-label {
+            margin-left: 8px;
+            font-family: "Space Mono", monospace;
+            font-size: 10px;
+            color: var(--muted);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .card-inner { padding: 20px; }
+
+        .upload-zone {
+            border: 1px dashed var(--border-bright);
+            border-radius: 12px;
+            padding: 28px 16px;
+            text-align: center;
+            cursor: pointer;
+            background: var(--cyan-dim);
+            transition: border-color 0.2s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .upload-zone.has-file { border-color: var(--cyan); border-style: solid; }
+        .upload-icon-wrap {
+            width: 48px; height: 48px;
+            border: 1px solid var(--border-bright);
+            border-radius: 12px;
+            margin: 0 auto 12px;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--surface2);
+        }
+        .upload-icon-wrap svg { width: 22px; height: 22px; stroke: var(--cyan); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+        .upload-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+        .upload-sub { font-family: "Space Mono", monospace; font-size: 10px; color: var(--muted); letter-spacing: 0.5px; }
+        #fileInput { display: none; }
+        video#preview {
+            display: none;
+            width: 100%;
+            border-radius: 10px;
+            margin-top: 14px;
+            max-height: 200px;
+            object-fit: cover;
+            background: #000;
+            border: 1px solid var(--border-bright);
         }
 
-        .chart-title {
-            font-family: 'Syne', sans-serif;
+        .btn {
+            width: 100%;
+            margin-top: 16px;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid var(--cyan);
+            background: var(--cyan-dim);
+            color: var(--cyan);
+            font-family: "Space Mono", monospace;
             font-weight: 700;
-            font-size: 14px;
-            color: var(--text);
+            font-size: 13px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background 0.2s;
+            box-shadow: 0 0 16px var(--cyan-glow);
+            -webkit-tap-highlight-color: transparent;
         }
+        .btn:active { background: rgba(0,200,255,0.2); }
+        .btn:disabled { opacity: 0.35; cursor: not-allowed; box-shadow: none; }
 
-        .live-pill {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 11px;
-            color: var(--accent);
-            background: var(--accent-dim);
-            border-radius: 20px;
-            padding: 4px 10px;
+        #loading { display: none; text-align: center; padding: 24px 0 8px; }
+        .radar { width: 48px; height: 48px; margin: 0 auto 14px; position: relative; }
+        .radar::before { content: ""; position: absolute; inset: 0; border: 1.5px solid var(--cyan); border-radius: 50%; opacity: 0.3; }
+        .radar::after { content: ""; position: absolute; inset: 4px; border: 1.5px solid var(--cyan); border-top-color: transparent; border-radius: 50%; animation: spin 0.9s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-txt { font-family: "Space Mono", monospace; font-size: 11px; color: var(--cyan); letter-spacing: 1.5px; animation: blink 1.2s ease-in-out infinite; }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+        #result-block { display: none; margin-top: 16px; border-radius: 12px; padding: 18px; border: 1px solid; }
+        #result-block.fight { border-color: rgba(255,58,58,0.4); background: var(--red-dim); }
+        #result-block.no-fight { border-color: rgba(0,255,157,0.3); background: var(--green-dim); }
+        .result-row { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+        .result-icon { width: 48px; height: 48px; border-radius: 12px; border: 1px solid; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .fight .result-icon { border-color: rgba(255,58,58,0.5); background: rgba(255,58,58,0.1); box-shadow: 0 0 20px var(--red-glow); }
+        .no-fight .result-icon { border-color: rgba(0,255,157,0.4); background: rgba(0,255,157,0.08); box-shadow: 0 0 20px var(--green-glow); }
+        .result-icon svg { width: 24px; height: 24px; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+        .fight .result-icon svg { stroke: var(--red); }
+        .no-fight .result-icon svg { stroke: var(--green); }
+        .result-label { font-family: "Space Mono", monospace; font-weight: 700; font-size: 18px; letter-spacing: 1px; text-transform: uppercase; line-height: 1.2; }
+        .fight .result-label { color: var(--red); }
+        .no-fight .result-label { color: var(--green); }
+        .result-sub { font-size: 11px; color: var(--muted); margin-top: 3px; font-family: "Space Mono", monospace; }
+        .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .stat-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
+        .stat-label { font-family: "Space Mono", monospace; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+        .stat-val { font-family: "Space Mono", monospace; font-weight: 700; font-size: 22px; }
+        .fight .stat-val { color: var(--red); }
+        .no-fight .stat-val { color: var(--green); }
+
+        #graph-card {
+            width: calc(100% - 32px);
+            max-width: 520px;
+            margin-top: 14px;
+            background: var(--surface);
+            border: 1px solid var(--border-bright);
+            border-radius: var(--r);
+            overflow: hidden;
         }
-
-        .live-dot {
-            width: 6px; height: 6px;
-            border-radius: 50%;
-            background: var(--accent);
-            animation: pulse 1s ease-in-out infinite;
+        .graph-header {
+            border-bottom: 1px solid var(--border);
+            padding: 14px 20px;
+            display: flex; align-items: center; justify-content: space-between;
         }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-
-        canvas { width: 100% !important; }
+        .graph-title { font-family: "Space Mono", monospace; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); }
+        .live-badge { display: flex; align-items: center; gap: 5px; font-family: "Space Mono", monospace; font-size: 9px; letter-spacing: 1px; color: var(--cyan); border: 1px solid var(--border-bright); padding: 3px 8px; border-radius: 4px; }
+        .live-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--cyan); animation: blink 1s ease-in-out infinite; }
+        .graph-inner { padding: 16px 20px 20px; }
+        .graph-empty { height: 160px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
+        .graph-empty-line { width: 100%; height: 1px; background: repeating-linear-gradient(90deg, var(--border-bright) 0, var(--border-bright) 4px, transparent 4px, transparent 12px); }
+        .graph-empty-txt { font-family: "Space Mono", monospace; font-size: 10px; color: var(--muted); letter-spacing: 1px; text-align: center; }
+        canvas#chart { display: none; width: 100% !important; }
     </style>
 </head>
 <body>
 
 <header>
-    <div class="logo-dot"></div>
-    <div class="logo-text">Rivo<span>x</span></div>
-    <div class="badge">FIGHT DETECT</div>
+    <div class="hx-mark">
+        <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 2L14 5.5V10.5L8 14L2 10.5V5.5L8 2Z" stroke="#00c8ff" stroke-width="1.2"/>
+            <circle cx="8" cy="8" r="2" fill="#00c8ff"/>
+        </svg>
+    </div>
+    <div class="brand">Rivox</div>
+    <div class="version">v2.0</div>
 </header>
 
 <div class="card">
+    <div class="card-top">
+        <div class="dot dot-r"></div>
+        <div class="dot dot-y"></div>
+        <div class="dot dot-g"></div>
+        <div class="card-label">Input Module</div>
+    </div>
     <div class="card-inner">
-
-        <div class="section-label">Upload Video</div>
-
         <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
-            <span class="upload-icon">🎬</span>
-            <div class="upload-title" id="uploadTitle">Tap to select video</div>
-            <div class="upload-sub">MP4, MOV, AVI supported</div>
+            <div class="upload-icon-wrap">
+                <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <div class="upload-title" id="uploadTitle">Tap to upload video</div>
+            <div class="upload-sub">MP4 &middot; MOV &middot; AVI &middot; MKV</div>
         </div>
         <input type="file" id="fileInput" accept="video/*">
-
         <video id="preview" controls playsinline></video>
 
-        <div class="divider"></div>
-
-        <button class="btn-analyze" onclick="uploadFile()" id="analyzeBtn">Analyze Video</button>
+        <button class="btn" id="analyzeBtn" onclick="analyze()">&#9654; &nbsp; Run Analysis</button>
 
         <div id="loading">
-            <div class="spinner-ring"></div>
-            <div class="loading-text">Analyzing movement patterns...</div>
+            <div class="radar"></div>
+            <div class="loading-txt">Scanning frames...</div>
         </div>
 
-        <div id="result-card">
-            <span class="result-emoji" id="resultEmoji"></span>
-            <div class="result-label" id="resultLabel"></div>
-            <div class="result-stats">
-                <div class="stat">
-                    <div class="stat-label">Confidence</div>
-                    <div class="stat-value" id="statConfidence">—</div>
+        <div id="result-block">
+            <div class="result-row">
+                <div class="result-icon">
+                    <svg id="icon-fight" viewBox="0 0 24 24" style="display:none">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                        <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                    <svg id="icon-nofight" viewBox="0 0 24 24" style="display:none">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
                 </div>
-                <div class="stat">
-                    <div class="stat-label">Max Intensity</div>
-                    <div class="stat-value" id="statIntensity">—</div>
+                <div>
+                    <div class="result-label" id="resultLabel"></div>
+                    <div class="result-sub" id="resultSub"></div>
+                </div>
+            </div>
+            <div class="stats-row">
+                <div class="stat-box">
+                    <div class="stat-label">Confidence</div>
+                    <div class="stat-val" id="statConf">—</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Peak Intensity</div>
+                    <div class="stat-val" id="statInt">—</div>
                 </div>
             </div>
         </div>
-
     </div>
 </div>
 
-<div id="chart-card">
-    <div class="chart-header">
-        <div class="chart-title">Movement Intensity</div>
-        <div class="live-pill" id="livePill">
-            <div class="live-dot"></div>
-            LIVE
+<div id="graph-card">
+    <div class="graph-header">
+        <div class="graph-title">Movement Intensity</div>
+        <div class="live-badge" id="liveBadge" style="display:none">
+            <div class="live-dot"></div>LIVE
         </div>
     </div>
-    <canvas id="chart" height="180"></canvas>
+    <div class="graph-inner">
+        <div class="graph-empty" id="graphEmpty">
+            <div class="graph-empty-line"></div>
+            <div class="graph-empty-txt">Awaiting analysis...</div>
+            <div class="graph-empty-line"></div>
+        </div>
+        <canvas id="chart" height="180"></canvas>
+    </div>
 </div>
 
 <script>
-let selectedFile = null;
-let chartInstance = null;
+let selectedFile = null, chartInstance = null;
 
 document.getElementById("fileInput").addEventListener("change", function () {
     selectedFile = this.files[0];
     if (!selectedFile) return;
-    document.getElementById("uploadTitle").innerText = selectedFile.name;
+    document.getElementById("uploadTitle").textContent = selectedFile.name;
     document.getElementById("uploadZone").classList.add("has-file");
-    const preview = document.getElementById("preview");
-    preview.src = URL.createObjectURL(selectedFile);
-    preview.style.display = "block";
+    const v = document.getElementById("preview");
+    v.src = URL.createObjectURL(selectedFile);
+    v.style.display = "block";
 });
 
-function uploadFile() {
-    if (!selectedFile) { alert("Please select a video file first."); return; }
-
+function analyze() {
+    if (!selectedFile) { alert("Please select a video first."); return; }
     const btn = document.getElementById("analyzeBtn");
     btn.disabled = true;
-
     document.getElementById("loading").style.display = "block";
-    document.getElementById("result-card").style.display = "none";
-    document.getElementById("chart-card").style.display = "none";
+    document.getElementById("result-block").style.display = "none";
 
-    const formData = new FormData();
-    formData.append("file", selectedFile);
+    const fd = new FormData();
+    fd.append("file", selectedFile);
 
-    fetch("/predict", { method: "POST", body: formData })
-        .then(res => res.json())
+    fetch("/predict", { method: "POST", body: fd })
+        .then(r => r.json())
         .then(data => {
             document.getElementById("loading").style.display = "none";
             btn.disabled = false;
-
-            if (data.error) {
-                alert("Error: " + data.error);
-                return;
-            }
+            if (data.error) { alert("Error: " + data.error); return; }
 
             const isFight = data.prediction === "Fight";
-            const resultCard = document.getElementById("result-card");
-            resultCard.className = isFight ? "fight" : "no-fight";
-            resultCard.style.display = "block";
+            const rb = document.getElementById("result-block");
+            rb.className = isFight ? "fight" : "no-fight";
+            rb.style.display = "block";
 
-            document.getElementById("resultEmoji").innerText = isFight ? "🚨" : "✅";
-            const label = document.getElementById("resultLabel");
-            label.innerText = isFight ? "Fight Detected" : "No Fight";
-            label.className = "result-label " + (isFight ? "fight" : "no-fight");
+            document.getElementById("icon-fight").style.display   = isFight ? "block" : "none";
+            document.getElementById("icon-nofight").style.display = isFight ? "none"  : "block";
+            document.getElementById("resultLabel").textContent = isFight ? "Fight Detected" : "No Fight";
+            document.getElementById("resultSub").textContent   = isFight
+                ? "Aggressive activity identified"
+                : "No threatening activity detected";
+            document.getElementById("statConf").textContent = (data.confidence * 100).toFixed(0) + "%";
+            document.getElementById("statInt").textContent  = data.max_intensity.toFixed(1);
 
-            document.getElementById("statConfidence").innerText =
-                (data.confidence * 100).toFixed(0) + "%";
-            document.getElementById("statIntensity").innerText =
-                data.max_intensity.toFixed(1);
-
-            // ── Animated chart ──
-            const chartCard = document.getElementById("chart-card");
-            chartCard.style.display = "block";
-
-            const threshold = 6;
-            const rawData = data.intensity_data;
-            const labels = rawData.map((_, i) => i + 1);
-
-            if (chartInstance) chartInstance.destroy();
-
-            const ctx = document.getElementById("chart").getContext("2d");
-
-            // Gradient fill
-            const gradient = ctx.createLinearGradient(0, 0, 0, 200);
-            gradient.addColorStop(0, isFight ? "rgba(255,69,69,0.35)" : "rgba(61,255,160,0.35)");
-            gradient.addColorStop(1, "rgba(0,0,0,0)");
-
-            const lineColor = isFight ? "#ff4545" : "#3dffa0";
-
-            chartInstance = new Chart(ctx, {
-                type: "line",
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: "Intensity",
-                            data: new Array(rawData.length).fill(null),
-                            borderColor: lineColor,
-                            backgroundColor: gradient,
-                            borderWidth: 2.5,
-                            tension: 0.4,
-                            pointRadius: 0,
-                            fill: true,
-                        },
-                        {
-                            label: "Threshold",
-                            data: labels.map(() => threshold),
-                            borderColor: "rgba(232,255,71,0.5)",
-                            borderWidth: 1.5,
-                            borderDash: [5, 5],
-                            pointRadius: 0,
-                            fill: false,
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    animation: false,
-                    interaction: { mode: "index", intersect: false },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: "#0e1419",
-                            borderColor: "rgba(255,255,255,0.1)",
-                            borderWidth: 1,
-                            titleColor: "#5a6a7a",
-                            bodyColor: "#f0f4f8",
-                            padding: 10,
-                        }
-                    },
-                    scales: {
-                        x: {
-                            title: { display: false },
-                            ticks: { color: "#5a6a7a", font: { size: 10 }, maxTicksLimit: 8 },
-                            grid: { color: "rgba(255,255,255,0.04)" }
-                        },
-                        y: {
-                            beginAtZero: true,
-                            ticks: { color: "#5a6a7a", font: { size: 10 } },
-                            grid: { color: "rgba(255,255,255,0.04)" }
-                        }
-                    }
-                }
-            });
-
-            // Animate data point by point
-            let i = 0;
-            const livePill = document.getElementById("livePill");
-            const interval = setInterval(() => {
-                if (i >= rawData.length) {
-                    clearInterval(interval);
-                    livePill.style.display = "none";
-                    return;
-                }
-                chartInstance.data.datasets[0].data[i] = rawData[i];
-                chartInstance.update("none");
-                i++;
-            }, 80);
+            renderGraph(data.intensity_data, isFight);
         })
         .catch(() => {
             document.getElementById("loading").style.display = "none";
             btn.disabled = false;
             alert("Something went wrong. Please try again.");
         });
+}
+
+function renderGraph(rawData, isFight) {
+    const lineColor = isFight ? "#ff3a3a" : "#00ff9d";
+    const fillColor = isFight ? "rgba(255,58,58,0.15)" : "rgba(0,255,157,0.12)";
+
+    document.getElementById("graphEmpty").style.display = "none";
+    const canvas = document.getElementById("chart");
+    canvas.style.display = "block";
+
+    if (chartInstance) chartInstance.destroy();
+
+    const ctx = canvas.getContext("2d");
+    const labels = rawData.map((_, i) => i + 1);
+    const animData = new Array(rawData.length).fill(null);
+
+    chartInstance = new Chart(ctx, {
+        type: "line",
+        data: {
+            labels,
+            datasets: [
+                { label: "Intensity", data: animData, borderColor: lineColor, backgroundColor: fillColor, borderWidth: 2, tension: 0.4, pointRadius: 0, fill: true },
+                { label: "Threshold", data: labels.map(() => 6), borderColor: "rgba(0,200,255,0.4)", borderWidth: 1, borderDash: [5,5], pointRadius: 0, fill: false }
+            ]
+        },
+        options: {
+            responsive: true, animation: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: "#080f1a", borderColor: "rgba(0,200,255,0.2)", borderWidth: 1,
+                    titleColor: "#3d5470", bodyColor: "#e2eaf5", padding: 10, displayColors: false,
+                    callbacks: {
+                        title: items => "Frame " + items[0].label,
+                        label: item => item.dataset.label === "Intensity"
+                            ? "Intensity: " + (item.raw !== null ? item.raw.toFixed(2) : "—")
+                            : "Threshold: 6"
+                    }
+                }
+            },
+            scales: {
+                x: { ticks: { color: "#3d5470", font: { family: "'Space Mono', monospace", size: 9 }, maxTicksLimit: 8 }, grid: { color: "rgba(0,200,255,0.05)" }, border: { color: "rgba(0,200,255,0.1)" } },
+                y: { beginAtZero: true, ticks: { color: "#3d5470", font: { family: "'Space Mono', monospace", size: 9 } }, grid: { color: "rgba(0,200,255,0.05)" }, border: { color: "rgba(0,200,255,0.1)" } }
+            }
+        }
+    });
+
+    let i = 0;
+    const badge = document.getElementById("liveBadge");
+    badge.style.display = "flex";
+    const iv = setInterval(() => {
+        if (i >= rawData.length) { clearInterval(iv); badge.style.display = "none"; return; }
+        chartInstance.data.datasets[0].data[i] = rawData[i];
+        chartInstance.update("none");
+        i++;
+    }, 80);
 }
 </script>
 </body>
@@ -547,17 +445,13 @@ def predict():
     try:
         if "file" not in request.files:
             return jsonify({"error": "No file uploaded"})
-
         file = request.files["file"]
         if file.filename == "":
             return jsonify({"error": "Empty file name"})
-
         filepath = os.path.join(UPLOAD_FOLDER, file.filename)
         file.save(filepath)
-
         result = detect_fight(filepath)
         return jsonify(result)
-
     except Exception as e:
         return jsonify({"error": str(e)})
 
