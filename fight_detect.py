@@ -1,24 +1,18 @@
 import cv2
 import numpy as np
-from ultralytics import YOLO
 import warnings
 import os
 
-# 🔇 Suppress warnings
 warnings.filterwarnings("ignore")
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-os.environ["YOLO_OFFLINE"] = "1"
 
-# Load YOLO model
-print("Loading YOLO model...")
-yolo_model = YOLO("yolov8n.pt")  # auto-downloads if not present
+# Lightweight HOG detector — no PyTorch needed
+hog = cv2.HOGDescriptor()
+hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
 
-# Parameters
-AGGRESSION_THRESHOLD = 7  # tweak based on motion intensity
+AGGRESSION_THRESHOLD = 7
 FIGHT_CONFIRMATION_FRAMES = 5
 
 def movement_intensity(prev_frame, curr_frame):
-    """Calculate simple motion intensity using frame difference."""
     gray_prev = cv2.cvtColor(prev_frame, cv2.COLOR_BGR2GRAY)
     gray_curr = cv2.cvtColor(curr_frame, cv2.COLOR_BGR2GRAY)
     diff = cv2.absdiff(gray_prev, gray_curr)
@@ -54,14 +48,12 @@ def detect_fight(video_path):
 
         frame = cv2.resize(frame, (480, 270))
 
-        # YOLO person detection
-        results = yolo_model(frame, classes=[0], verbose=False)
-        person_count = sum(len(r.boxes) for r in results)
-        if person_count < 2:
+        # HOG person detection instead of YOLO
+        boxes, _ = hog.detectMultiScale(frame, winStride=(8, 8), padding=(4, 4), scale=1.05)
+        if len(boxes) < 2:
             prev_frame = frame
             continue
 
-        # Motion intensity
         if prev_frame is not None:
             intensity = movement_intensity(prev_frame, frame)
             intensity_list.append(float(intensity))
@@ -85,8 +77,3 @@ def detect_fight(video_path):
         "intensity_data": intensity_list[:30],
         "max_intensity": round(max_intensity, 2)
     }
-
-# 🔹 Run test
-if __name__ == "__main__":
-    result = detect_fight("fight.mp4")
-    print(result)
